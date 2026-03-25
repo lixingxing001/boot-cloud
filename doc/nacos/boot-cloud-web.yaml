@@ -1,0 +1,91 @@
+server:
+  port: 9003
+
+spring:
+  application:
+    name: boot-cloud-web
+
+boot:
+  cloud:
+    auth:
+      client:
+        client-id: boot-cloud-web
+        client-secret: CHANGE_ME
+        use-basic-auth: true
+
+    web:
+      upstream:
+        connect-timeout: 3s
+        read-timeout: 10s
+        debug-log: false
+        max-body-chars-for-log: 1024
+        include-body-in-response-details: true
+        max-body-chars-for-response-details: 512
+
+      services:
+        current-service-name: boot-cloud-web
+        base-service:
+          service-name: boot-cloud-base
+          base-url: http://boot-cloud-base
+
+      admin-auth:
+        client-id: boot-cloud-admin-web
+        client-secret: CHANGE_ME
+        use-basic-auth: true
+        device-id-cookie-name: BOOT_CLOUD_ADMIN_DEVICE_ID
+        device-id-cookie-max-age-seconds: 2592000
+        device-id-cookie-path: /
+        device-id-cookie-domain: ""
+        device-id-cookie-same-site: Lax
+        device-id-cookie-secure: false
+
+      user-auth:
+        device-id-cookie-name: BOOT_CLOUD_USER_DEVICE_ID
+        device-id-cookie-max-age-seconds: 2592000
+        device-id-cookie-path: /
+        device-id-cookie-domain: ""
+        device-id-cookie-same-site: Lax
+        device-id-cookie-secure: false
+        tenant-site-selector:
+          enabled: false
+          cookie-name: BOOT_CLOUD_USER_SELECTED_TENANT
+          cookie-max-age-seconds: 2592000
+          cookie-path: /
+          cookie-domain: ""
+          cookie-same-site: Lax
+          cookie-secure: false
+
+      auth:
+        ticket:
+          aes-key-base64: CHANGE_ME_BASE64_AES_KEY
+          ticket-ttl-seconds: 60
+        device:
+          token-secret: CHANGE_ME_DEVICE_TOKEN_SECRET
+
+      version-refresh:
+        enabled: true
+        enforce-path-patterns:
+          - /api/**
+        enforce-exclude-path-patterns:
+          - /api/web/runtime/version-meta
+          - /api/web/admin/runtime/version-meta
+          - /api/web/auth/**
+          - /api/web/admin/auth/**
+        primary:
+          current-build-id: dev-local
+          refresh-policy: soft
+          message: 检测到新版本，请刷新页面后继续操作
+          grace-seconds: 45
+          enforce-on-mismatch: false
+          accepted-build-ids: []
+        admin:
+          current-build-id: dev-local
+          refresh-policy: soft
+          message: 检测到新版本，请刷新页面后继续操作
+          grace-seconds: 45
+          enforce-on-mismatch: false
+          accepted-build-ids: []
+
+logging:
+  level:
+    com.bootcloud.web: INFO

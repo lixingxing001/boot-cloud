@@ -1,0 +1,3 @@
+com.bootcloud.common.core.security.SecurityUserAutoConfiguration
+com.bootcloud.common.core.trace.TraceIdAutoConfiguration
+com.bootcloud.common.core.i18n.LocaleMessageAutoConfiguration

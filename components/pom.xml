@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.bootcloud</groupId>
+        <artifactId>boot-cloud</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>boot-cloud-components</artifactId>
+    <packaging>pom</packaging>
+    <name>boot-cloud-components</name>
+    <description>Reusable components for boot-cloud scaffold</description>
+
+    <modules>
+        <module>boot-cloud-common-core</module>
+        <module>boot-cloud-common-feign</module>
+        <module>boot-cloud-common-security</module>
+        <module>boot-cloud-common-nacos</module>
+        <module>boot-cloud-starter-auth-autoconfigure</module>
+        <module>boot-cloud-starter-auth</module>
+        <!--
+          说明：
+          当前脚手架优先保留复用价值最高的公共能力。
+          其他增强模块后续按实际项目需要再补，避免初版过重。
+        -->
+    </modules>
+
+</project>
+

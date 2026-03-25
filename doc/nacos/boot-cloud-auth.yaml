@@ -1,0 +1,117 @@
+server:
+  port: 9001
+
+spring:
+  application:
+    name: boot-cloud-auth
+
+boot:
+  cloud:
+    auth:
+      allowed-tenant-ids: []
+      denied-tenant-ids: []
+      default-access-token-ttl-seconds: 7200
+      default-refresh-token-ttl-seconds: 2592000
+      authorization-code-ttl-seconds: 300
+      reuse-refresh-token: true
+
+      # 开发期内置账号开关，生产建议关闭
+      dev-users-enabled: false
+      dev-users:
+        - tenant-id: 1
+          username: demo_admin
+          password-hash: CHANGE_ME_BCRYPT_HASH
+          user-id: "10001"
+          scopes:
+            - admin
+          enabled: false
+
+      # 静态 OAuth2 client 示例
+      clients:
+        - tenant-id: 0
+          client-id: boot-cloud-gateway
+          client-secret-hash: CHANGE_ME_BCRYPT_HASH
+          grant-types:
+            - client_credentials
+          scopes:
+            - introspect
+          redirect-uris: []
+          access-token-ttl-seconds: 7200
+          refresh-token-ttl-seconds: 2592000
+          allow-refresh-token: false
+          enabled: true
+        - tenant-id: 1
+          client-id: boot-cloud-web
+          client-secret-hash: CHANGE_ME_BCRYPT_HASH
+          grant-types:
+            - authorization_code
+            - password
+            - refresh_token
+          scopes:
+            - user
+          redirect-uris:
+            - http://localhost:9003/login/callback
+          access-token-ttl-seconds: 7200
+          refresh-token-ttl-seconds: 2592000
+          allow-refresh-token: true
+          enabled: true
+
+      admin-authorities:
+        enabled: true
+        cache-ttl-seconds: 90
+
+      multi-session:
+        enabled: true
+        client-ids:
+          - boot-cloud-admin-web
+          - boot-cloud-web
+        device-id-param-name: device_id
+        max-device-id-length: 64
+
+      device-session:
+        enabled: true
+        ttl-seconds: 7776000
+        max-devices-per-user: 20
+        overflow-policy: reject_new
+        clients:
+          boot-cloud-web:
+            max-devices-per-user: 3
+            overflow-policy: kick_oldest
+          boot-cloud-admin-web:
+            max-devices-per-user: 10
+            overflow-policy: kick_oldest
+
+      mfa-login:
+        mode: strict
+        fixed-otp: ""
+        dev-only: true
+        allowed-profiles:
+          - local
+          - dev
+          - test
+
+      client-cache:
+        enabled: true
+        ttl-seconds: 120
+        negative-enabled: false
+        negative-ttl-seconds: 10
+
+      system-client-preference:
+        enabled: true
+        client-ids:
+          - boot-cloud-gateway
+          - boot-cloud-resource-server
+          - boot-cloud-realtime
+
+sa-token:
+  alone-redis:
+    database: 7
+    host: ${REDIS_HOST:127.0.0.1}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    connect-timeout: 3s
+    timeout: 10s
+
+logging:
+  level:
+    com.bootcloud.auth: INFO
