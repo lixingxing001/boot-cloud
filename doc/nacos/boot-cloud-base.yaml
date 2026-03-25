@@ -1,0 +1,18 @@
+server:
+  port: 9002
+
+spring:
+  application:
+    name: boot-cloud-base
+
+boot:
+  cloud:
+    base:
+      # 域名未命中映射时使用的默认租户
+      default-tenant-id: 1
+      # true 表示未找到映射时直接报错
+      fail-on-not-found: false
+
+logging:
+  level:
+    com.bootcloud.base: INFO

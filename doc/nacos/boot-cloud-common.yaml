@@ -1,0 +1,29 @@
+# 通用框架配置
+
+boot:
+  cloud:
+    trace:
+      enabled: true
+      header-name: X-Trace-Id
+      echo-response-header: true
+
+    i18n:
+      enabled: true
+      default-locale: zh-CN
+      supported-locales:
+        - zh-CN
+        - en-US
+      basenames:
+        - classpath:i18n/errors
+      debug-log: false
+
+logging:
+  level:
+    com.bootcloud: INFO
+    com.baomidou.mybatisplus: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

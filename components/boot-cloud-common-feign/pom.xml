@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.bootcloud</groupId>
+        <artifactId>boot-cloud-components</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>boot-cloud-common-feign</artifactId>
+    <packaging>jar</packaging>
+    <name>boot-cloud-common-feign</name>
+    <description>OpenFeign common utilities and shared APIs</description>
+
+    <dependencies>
+        <!-- 基础：TraceId 等通用能力 -->
+        <dependency>
+            <groupId>com.bootcloud</groupId>
+            <artifactId>boot-cloud-common-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- OpenFeign -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
+        <!--
+          说明：
+          Feign 表单编码支持（application/x-www-form-urlencoded）。
+          用于 /oauth/token、/oauth/check_token 这类端点，避免服务端解析不到 @RequestParam 的必填参数。
+        -->
+        <dependency>
+            <groupId>io.github.openfeign.form</groupId>
+            <artifactId>feign-form-spring</artifactId>
+        </dependency>
+
+        <!-- LoadBalancer：支持通过服务名解析实例 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+
+        <!-- 仅提供编译期注解处理 -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+</project>

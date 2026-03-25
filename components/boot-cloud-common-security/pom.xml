@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.bootcloud</groupId>
+        <artifactId>boot-cloud-components</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>boot-cloud-common-security</artifactId>
+    <name>boot-cloud-common-security</name>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <!--
+          说明：
+          InternalApiInterceptor 依赖 InternalHmacAuth（位于 boot-cloud-common-core）。
+          若缺少该依赖，会在 管理端服务 / 业务服务 启动前的编译阶段报
+          “package com.bootcloud.common.core.internal does not exist”。
+        -->
+        <dependency>
+            <groupId>com.bootcloud</groupId>
+            <artifactId>boot-cloud-common-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- 说明：用于提供 AutoConfiguration 能力 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-spring-boot3-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>
+

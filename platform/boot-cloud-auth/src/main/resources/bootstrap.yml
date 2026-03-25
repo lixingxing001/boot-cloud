@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: boot-cloud-auth
+  cloud:
+    nacos:
+      username: nacos
+      password: nacos
+      discovery:
+        server-addr: ${NACOS_SERVER:192.168.3.80:8848}
+        namespace: ${NACOS_NAMESPACE:dev}
+        group: DEFAULT_GROUP
+      config:
+        server-addr: ${NACOS_SERVER:192.168.3.80:8848}
+        namespace: ${NACOS_NAMESPACE:dev}
+        group: DEFAULT_GROUP
+        file-extension: yaml
+        refresh-enabled: true
+        prefix: ${spring.application.name}
+        shared-configs:
+          - data-id: boot-cloud-oauth-common.yaml
+            group: DEFAULT_GROUP
+            refresh: true
+
+  config:
+    import:
+      - "nacos:boot-cloud-db.yaml"
+      - "nacos:boot-cloud-common.yaml"
+
+  main:
+    banner-mode: OFF
+    allow-circular-references: true
+
+logging:
+  level:
+    com.bootcloud.auth: DEBUG

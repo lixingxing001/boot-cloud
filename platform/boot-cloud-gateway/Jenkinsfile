@@ -1,0 +1,165 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven-3.9.11'
+    }
+
+    environment {
+        // 镜像配置
+        IMAGE_NAME = 'boot-cloud-gateway'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        DOCKER_REGISTRY = "${DOCKER_REGISTRY_URL ?: ''}"  // 可选：私有镜像仓库地址
+
+        // Maven 配置
+        MAVEN_OPTS = '-Dmaven.repo.local=.m2/repository'
+
+        // 应用配置
+        APP_NAME = 'boot-cloud-gateway'
+        // 说明：boot-cloud 是当前仓库的父工程聚合构建，这里指定模块路径（相对仓库根目录）
+        MODULE_PATH = 'platform/boot-cloud-gateway'
+    }
+
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "拉取代码..."
+                checkout scm
+            }
+        }
+
+        stage('Build JAR') {
+            steps {
+                echo "编译 boot-cloud: ${APP_NAME}..."
+                dir('.') {
+                    sh '''
+                        set -e
+                        mvn -s /var/jenkins_home/maven/settings.xml -pl ${MODULE_PATH} -am clean package -U -DskipTests -Dmaven.test.skip=true
+
+                        cd ${MODULE_PATH}
+
+                        # 兼容 SNAPSHOT/版本变化：自动查找产物（排除 *.original）
+                        JAR_PATH=$(ls target/${APP_NAME}-*.jar 2>/dev/null | grep -v '\\.original$' | head -n 1 || true)
+                        if [ -z "$JAR_PATH" ]; then
+                            echo "编译失败：未找到 target/${APP_NAME}-*.jar"
+                            ls -la target || true
+                            exit 1
+                        fi
+
+                        # 重命名 JAR 以匹配 Dockerfile（COPY target/${APP_NAME}.jar）
+                        cp "$JAR_PATH" "target/${APP_NAME}.jar"
+                        echo "编译成功: ${MODULE_PATH}/target/${APP_NAME}.jar"
+                    '''
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "构建 Docker 镜像..."
+                dir("./${env.MODULE_PATH}") {
+                    script {
+                        def buildTime = sh(script: "date '+%Y-%m-%d %H:%M:%S'", returnStdout: true).trim()
+
+                        sh """
+                            docker build \
+                                --build-arg IMAGE_NAME=${IMAGE_NAME} \
+                                --build-arg IMAGE_TAG=${IMAGE_TAG} \
+                                --build-arg BUILD_TIME='${buildTime}' \
+                                --build-arg APP_NAME=${APP_NAME} \
+                                -t ${IMAGE_NAME}:${IMAGE_TAG} \
+                                -t ${IMAGE_NAME}:latest \
+                                .
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Push to Registry') {
+            when {
+                expression { return env.DOCKER_REGISTRY?.trim() }
+            }
+            steps {
+                echo "推送镜像到仓库..."
+                script {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'docker-registry-credentials',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )]) {
+                        sh """
+                            echo \$DOCKER_PASS | docker login ${DOCKER_REGISTRY} -u \$DOCKER_USER --password-stdin
+
+                            docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+                            docker tag ${IMAGE_NAME}:latest ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
+
+                            docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+                            docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo "部署容器..."
+                sh '''
+                    set -e
+
+                    # 停止并删除旧容器
+                    docker rm -f ${APP_NAME} 2>/dev/null || true
+
+                    # 删除旧镜像（保留 latest 与本次 BUILD_NUMBER 的 tag）
+                    docker images ${IMAGE_NAME} --format "{{.ID}} {{.Tag}}" | grep -v latest | grep -v ${IMAGE_TAG} | awk '{print $1}' | xargs -r docker rmi -f 2>/dev/null || true
+
+                    # 启动新容器（使用 host 网络模式，服务注册使用宿主机 IP）
+                    docker run -d \
+                        --name ${APP_NAME} \
+                        --network host \
+                        --restart unless-stopped \
+                        -e JVM_XMS=512m \
+                        -e JVM_XMX=1024m \
+                        -e SPRING_PROFILES_ACTIVE=prod \
+                        -e NACOS_SERVER=172.31.0.59:8848 \
+                        -e NACOS_NAMESPACE=dev \
+                        ${IMAGE_NAME}:latest
+
+                    # 等待容器启动
+                    sleep 5
+
+                    # 检查容器状态
+                    if docker ps | grep -q ${APP_NAME}; then
+                        echo "容器启动成功!"
+                        docker logs --tail 50 ${APP_NAME}
+                    else
+                        echo "容器启动失败!"
+                        docker logs ${APP_NAME}
+                        exit 1
+                    fi
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "构建成功! 镜像: ${IMAGE_NAME}:${IMAGE_TAG}"
+        }
+        failure {
+            echo "构建失败!"
+        }
+        always {
+            // 清理工作空间中的 Docker 构建缓存
+            sh 'docker image prune -f || true'
+        }
+    }
+}
+

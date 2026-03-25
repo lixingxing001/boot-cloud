@@ -1,0 +1,122 @@
+server:
+  port: 9999
+
+spring:
+  application:
+    name: boot-cloud-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: boot-cloud-auth
+          uri: lb://boot-cloud-auth
+          predicates:
+            - Path=/oauth/**,/api/auth/**
+
+        - id: boot-cloud-web
+          uri: lb://boot-cloud-web
+          predicates:
+            - Path=/api/web/**
+
+        - id: boot-cloud-base
+          uri: lb://boot-cloud-base
+          predicates:
+            - Path=/base/**
+          filters:
+            - StripPrefix=1
+
+        - id: boot-cloud-demo-service
+          uri: lb://boot-cloud-demo-service
+          predicates:
+            - Path=/api/**
+
+boot:
+  cloud:
+    gateway:
+      base-service-id: boot-cloud-base
+      tenant-resolve-path: /internal/tenant/resolve
+      public-paths: []
+      tenant-header: X-Tenant-Id
+      user-id-header: X-User-Id
+      client-id-header: X-Client-Id
+      scope-header: X-Scope
+      tenant-cache-ttl: 30s
+      introspection-cache-enabled: true
+      introspection-cache-ttl: 15s
+      introspection-cache-max-entries: 10000
+      accept-tenant-header-from-client: false
+      trust-forwarded-host-headers: false
+      forwarded-host-header-candidates:
+        - X-Forwarded-Host
+        - X-Original-Host
+        - Forwarded
+      fail-on-tenant-resolve-error: true
+      default-tenant-id: 1
+
+      lb:
+        prefer-local:
+          enabled: false
+          detect-local-ips: true
+          prefer-caller-ip: true
+          caller-ip-header-name: X-BootCloud-Caller-Ip
+          trust-forwarded-headers: false
+          local-ips: []
+
+      risk:
+        enabled: false
+        mode: ENFORCE
+        include-public-paths: true
+        ignore-paths:
+          - /actuator/**
+        admin-path-patterns:
+          - /api/admin/**
+          - /api/web/admin/**
+        ip:
+          enabled: true
+          trust-forwarded-headers: false
+          forwarded-header-candidates:
+            - CF-Connecting-IP
+            - X-Forwarded-For
+            - X-Real-IP
+          allow-list: []
+          deny-list: []
+        geo:
+          enabled: false
+          trust-country-header: true
+          country-header-name: CF-IPCountry
+          allow-countries: []
+          deny-countries: []
+          unknown-country-policy: ALLOW
+          cidr-country-map: {}
+          geo-ip:
+            enabled: false
+            mmdb-path: /data/geo/GeoLite2-Country.mmdb
+        admin-policy:
+          enabled: false
+          mode: ENFORCE
+          include-public-paths: true
+          ignore-paths:
+            - /actuator/**
+          ip:
+            enabled: true
+            trust-forwarded-headers: false
+            forwarded-header-candidates:
+              - CF-Connecting-IP
+              - X-Forwarded-For
+              - X-Real-IP
+            allow-list: []
+            deny-list: []
+          geo:
+            enabled: false
+            trust-country-header: true
+            country-header-name: CF-IPCountry
+            allow-countries: []
+            deny-countries: []
+            unknown-country-policy: ALLOW
+            cidr-country-map: {}
+            geo-ip:
+              enabled: false
+              mmdb-path: /data/geo/GeoLite2-Country.mmdb
+
+logging:
+  level:
+    com.bootcloud.gateway: INFO

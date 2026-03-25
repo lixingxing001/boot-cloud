@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS `boot_cloud_oauth_client` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `tenant_id` BIGINT NOT NULL DEFAULT 0 COMMENT '租户 ID，0 表示系统级 client',
+  `scope_type` VARCHAR(16) NOT NULL DEFAULT 'TENANT' COMMENT '作用域类型：SYSTEM 或 TENANT',
+  `client_id` VARCHAR(128) NOT NULL COMMENT 'OAuth2 client_id',
+  `client_secret` VARCHAR(255) NOT NULL COMMENT 'OAuth2 client_secret，建议保存 BCrypt 哈希',
+  `client_name` VARCHAR(128) DEFAULT NULL COMMENT '客户端名称',
+  `grant_types` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '授权模式，逗号分隔',
+  `scopes` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '权限范围，逗号分隔',
+  `redirect_uris` TEXT COMMENT '回调地址列表，支持 CSV 或 JSON 数组字符串',
+  `access_token_ttl_s` INT DEFAULT NULL COMMENT 'access_token 过期时间，秒',
+  `refresh_token_ttl_s` INT DEFAULT NULL COMMENT 'refresh_token 过期时间，秒',
+  `allow_refresh_token` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否允许签发 refresh_token',
+  `status` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '状态：1 启用，0 禁用',
+  `remark` VARCHAR(255) DEFAULT NULL COMMENT '备注',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_boot_cloud_oauth_client_tenant_client` (`tenant_id`, `client_id`),
+  KEY `idx_boot_cloud_oauth_client_scope` (`tenant_id`, `scope_type`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='boot-cloud OAuth2 client 管理表';

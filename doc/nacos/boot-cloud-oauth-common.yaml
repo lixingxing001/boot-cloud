@@ -1,0 +1,73 @@
+# 跨服务安全与认证公共配置
+
+boot:
+  cloud:
+    security:
+      public-paths:
+        - /oauth/**
+        - /api/auth/**
+        - /api/web/auth/**
+        - /api/web/admin/auth/**
+        - /api/web/runtime/version-meta
+        - /api/web/admin/runtime/version-meta
+        - /actuator/**
+
+      user:
+        enabled: true
+        debug-log: false
+        user-id-header: X-User-Id
+        tenant-id-header: X-Tenant-Id
+        client-id-header: X-Client-Id
+        scope-header: X-Scope
+
+    auth:
+      client:
+        base-url: http://boot-cloud-auth
+        token-path: /oauth/token
+        introspect-path: /oauth/check_token
+        revoke-path: /oauth/revoke
+        tenant-header-name: X-Tenant-Id
+        use-basic-auth: true
+
+    oauth2:
+      resource-server:
+        enabled: true
+        default-tenant-id: 1
+        debug-log: false
+        introspection-cache-enabled: true
+        introspection-cache-ttl-seconds: 15
+        introspection-cache-max-entries: 20000
+
+    internal-auth:
+      internal-service-header: X-Internal-Service-Token
+      internal-service-secret: CHANGE_ME_INTERNAL_SERVICE_SECRET
+      internal-hmac-enabled: true
+      accept-legacy-service-token: true
+      internal-hmac-skew-seconds: 300
+      internal-allowed-services:
+        - boot-cloud-auth
+        - boot-cloud-base
+        - boot-cloud-gateway
+        - boot-cloud-web
+        - boot-cloud-demo-service
+
+    lb:
+      prefer-local:
+        enabled: false
+        detect-local-ips: true
+        local-ips: []
+        prefer-caller-ip: false
+        caller-ip-header-name: X-BootCloud-Caller-Ip
+        trust-forwarded-headers: false
+        exclude-applications:
+          - boot-cloud-gateway
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+
+logging:
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%thread]){blue} %clr([TID:%X{traceId:-N/A}]){magenta} %clr(%-5level){green} %clr(%logger{36}){cyan} : %msg%n"

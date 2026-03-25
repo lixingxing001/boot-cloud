@@ -1,0 +1,4 @@
+com.bootcloud.auth.starter.autoconfig.AuthClientPropertiesAutoConfiguration
+com.bootcloud.auth.starter.autoconfig.AuthMvcClientAutoConfiguration
+com.bootcloud.auth.starter.autoconfig.AuthReactiveClientAutoConfiguration
+

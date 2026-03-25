@@ -1,0 +1,11 @@
+# 消息队列配置
+
+rocketmq:
+  name-server: ${ROCKETMQ_NAME_SERVER:127.0.0.1:9876}
+  producer:
+    group: boot-cloud-producer
+    send-message-timeout: 3000
+    retry-times-when-send-failed: 2
+  consumer:
+    group: boot-cloud-consumer
+    consume-timeout: 15000
